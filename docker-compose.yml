@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  # Main API service
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: my-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - API_BEARER_TOKEN=${API_BEARER_TOKEN:-}
+      - CACHE_DRIVER=${CACHE_DRIVER:-memory}
+      - CACHE_TTL=${CACHE_TTL:-3600}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - MEMCACHE_SERVERS=${MEMCACHE_SERVERS:-memcache:11211}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+    depends_on:
+      - redis
+    networks:
+      - my-api-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis cache (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: parser-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - my-api-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Memcache (optional)
+  memcache:
+    image: memcached:alpine
+    container_name: parser-memcache
+    ports:
+      - "11211:11211"
+    networks:
+      - my-api-network
+    restart: unless-stopped
+
+networks:
+  my-api-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
