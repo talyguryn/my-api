@@ -4,7 +4,6 @@ import { CacheService } from './cache.service';
 
 describe('CacheService', () => {
   let service: CacheService;
-  let configService: ConfigService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,7 +19,6 @@ describe('CacheService', () => {
     }).compile();
 
     service = module.get<CacheService>(CacheService);
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   describe('set and get', () => {
@@ -47,7 +45,7 @@ describe('CacheService', () => {
       expect(service.get(key)).toEqual(value);
 
       // Wait for expiration
-      await new Promise((resolve) => setTimeout(resolve, 1100));
+      await new Promise(resolve => setTimeout(resolve, 1100));
       expect(service.get(key)).toBeNull();
     });
   });
@@ -91,7 +89,7 @@ describe('CacheService', () => {
       service.set(key1, { data: '1' }, 1);
       service.set(key2, { data: '2' }, 3600);
 
-      await new Promise((resolve) => setTimeout(resolve, 1100));
+      await new Promise(resolve => setTimeout(resolve, 1100));
       await service.cleanupExpired();
 
       expect(service.has(key1)).toBe(false);

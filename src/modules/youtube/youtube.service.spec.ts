@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
 import axios from 'axios';
 import { YoutubeService } from './youtube.service';
 import { CacheService } from '../cache/cache.service';
@@ -26,7 +25,7 @@ describe('YoutubeService', () => {
     }).compile();
 
     service = module.get<YoutubeService>(YoutubeService);
-    cacheService = module.get<CacheService>(CacheService);
+    cacheService = module.get(CacheService);
   });
 
   afterEach(() => {

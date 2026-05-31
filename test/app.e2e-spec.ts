@@ -39,7 +39,7 @@ describe('Parser API (e2e)', () => {
       return request(app.getHttpServer())
         .get('/health')
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           expect(res.body).toHaveProperty('status', 'ok');
           expect(res.body).toHaveProperty('timestamp');
         });
@@ -82,9 +82,7 @@ describe('Parser API (e2e)', () => {
 
   describe('Bearer Token Authentication', () => {
     it('should allow access without token if token is not configured', () => {
-      return request(app.getHttpServer())
-        .get('/health')
-        .expect(200);
+      return request(app.getHttpServer()).get('/health').expect(200);
     });
   });
 });

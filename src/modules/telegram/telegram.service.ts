@@ -50,7 +50,7 @@ export class TelegramService {
       const title = $('.tgme_page_title span').text().trim() || null;
 
       // Preserve line breaks in description
-      let descriptionHtml = $('.tgme_page_description').html() || '';
+      const descriptionHtml = $('.tgme_page_description').html() || '';
       const description = descriptionHtml
         .replace(/<br\s*\/?>/gi, '\n') // convert <br> to newline
         .replace(/<\/?[^>]+>/g, '') // strip remaining HTML tags

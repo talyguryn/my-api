@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { UnauthorizedException, ExecutionContext } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
-import { IS_PUBLIC_KEY } from '@/decorators/public.decorator';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
@@ -74,9 +73,7 @@ describe('AuthGuard', () => {
       }),
     } as unknown as ExecutionContext;
 
-    expect(() => guard.canActivate(mockContext)).toThrow(
-      UnauthorizedException,
-    );
+    expect(() => guard.canActivate(mockContext)).toThrow(UnauthorizedException);
   });
 
   it('should throw UnauthorizedException when bearer token is invalid', () => {
@@ -95,9 +92,7 @@ describe('AuthGuard', () => {
       }),
     } as unknown as ExecutionContext;
 
-    expect(() => guard.canActivate(mockContext)).toThrow(
-      UnauthorizedException,
-    );
+    expect(() => guard.canActivate(mockContext)).toThrow(UnauthorizedException);
   });
 
   it('should allow access with valid bearer token', () => {

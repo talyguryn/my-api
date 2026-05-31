@@ -243,7 +243,10 @@ export class YoutubeService {
       return this.getString(last.url);
     }
 
-    const microformat = this.findObjectByKey(initialData, 'microformatDataRenderer');
+    const microformat = this.findObjectByKey(
+      initialData,
+      'microformatDataRenderer',
+    );
     const thumb = microformat?.thumbnail as UnknownRecord | undefined;
     const microThumbnails = thumb?.thumbnails as unknown[] | undefined;
     if (Array.isArray(microThumbnails) && microThumbnails.length > 0) {

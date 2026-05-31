@@ -47,8 +47,7 @@ export class YoutubeChannelResponseDto {
 
   @ApiProperty({
     description: 'Channel avatar image URL',
-    example:
-      'https://yt3.googleusercontent.com/...',
+    example: 'https://yt3.googleusercontent.com/...',
   })
   image!: string | null;
 
