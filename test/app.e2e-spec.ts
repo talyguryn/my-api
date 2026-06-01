@@ -4,9 +4,15 @@ import { ConfigModule } from '@nestjs/config';
 import request from 'supertest';
 import configuration from '@/config/configuration';
 import { AppModule } from '@/app.module';
+import { YoutubeService } from '@/modules/youtube/youtube.service';
+import { TelegramService } from '@/modules/telegram/telegram.service';
+import { YoutubeChannelResponseDto } from '@/modules/youtube/youtube.dto';
+import { TelegramChannelResponseDto } from '@/modules/telegram/telegram.dto';
 
 describe('Parser API (e2e)', () => {
   let app: INestApplication;
+  let youtubeService: YoutubeService;
+  let telegramService: TelegramService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -28,6 +34,45 @@ describe('Parser API (e2e)', () => {
       }),
     );
     await app.init();
+
+    youtubeService = moduleFixture.get<YoutubeService>(YoutubeService);
+    telegramService = moduleFixture.get<TelegramService>(TelegramService);
+
+    // Mock the services to avoid real HTTP calls
+    const youtubeResponse: YoutubeChannelResponseDto = {
+      uri: 'https://youtube.com/@testchannel',
+      link: 'https://youtube.com/@testchannel',
+      title: 'Test Channel',
+      description: 'Test Description',
+      image: 'https://example.com/image.jpg',
+      updatedAt: new Date().toISOString(),
+      subscribers: 1000000,
+      subscribersText: '1M',
+      videos: 100,
+      videosText: '100',
+      views: 50000000,
+      viewsText: '50M',
+      joinedAt: '2020-01-01',
+    };
+
+    jest
+      .spyOn(youtubeService, 'getChannelInfo')
+      .mockResolvedValue(youtubeResponse);
+
+    const telegramResponse: TelegramChannelResponseDto = {
+      uri: 'https://t.me/testchannel',
+      link: 'https://t.me/testchannel',
+      title: 'Test Channel',
+      description: 'Test Description',
+      image: 'https://example.com/image.jpg',
+      updatedAt: new Date().toISOString(),
+      subscribers: 500000,
+      subscribersText: '500K',
+    };
+
+    jest
+      .spyOn(telegramService, 'getChannelInfo')
+      .mockResolvedValue(telegramResponse);
   });
 
   afterAll(async () => {
@@ -53,13 +98,14 @@ describe('Parser API (e2e)', () => {
         .expect(400);
     });
 
-    it('GET /api/youtube/channel should accept channel parameter', async () => {
+    it('GET /api/youtube/channel should accept channel parameter and return 200', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/youtube/channel')
         .query({ channel: '@testchannel' });
 
-      // Will fail due to network, but should validate parameters
-      expect(response.status).toBeGreaterThanOrEqual(400);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('title');
+      expect(response.body).toHaveProperty('subscribers');
     });
   });
 
@@ -70,19 +116,27 @@ describe('Parser API (e2e)', () => {
         .expect(400);
     });
 
-    it('GET /api/telegram/channel should accept channel parameter', async () => {
+    it('GET /api/telegram/channel should accept channel parameter and return 200', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/telegram/channel')
         .query({ channel: 'testchannel' });
 
-      // Will fail due to network, but should validate parameters
-      expect(response.status).toBeGreaterThanOrEqual(400);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('title');
+      expect(response.body).toHaveProperty('subscribers');
     });
   });
 
   describe('Bearer Token Authentication', () => {
-    it('should allow access without token if token is not configured', () => {
+    it('should allow access to public endpoints without token', () => {
       return request(app.getHttpServer()).get('/health').expect(200);
+    });
+
+    it('should allow access to parser endpoints without token (public by default)', () => {
+      return request(app.getHttpServer())
+        .get('/api/youtube/channel')
+        .query({ channel: '@google' })
+        .expect(200);
     });
   });
 });
